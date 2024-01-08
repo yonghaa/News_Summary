@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}뉴스 장르 - {{ current_genre }}{% endblock %}
+{% block content %}
+<div class="table-container">
+
+    <div class="rows-container">
+        <form action="{{ url_for('show_news', genre=current_genre) }}" method="get">
+            <select name="per_page" onchange="this.form.submit()">
+                <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+                <option value="20" {% if per_page == 20 %}selected{% endif %}>20</option>
+                <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+            </select>
+        </form>
+        <div class="search-container">
+            <form action="{{ url_for('show_news', genre=current_genre) }}" method="get">
+                <input type="text" name="search_query" placeholder="여러 단어 검색시 공백 구분" value="{{ request.args.get('search_query', '') }}">
+                <button type="submit">검색</button>
+            </form>
+        </div>
+
+    </div>
+
+    <table>
+        <tr>
+            <th style="width : 90px;">뉴스 게시일</th>
+            <th style="width : 85px;">언론사</th>
+            <th style="width : 80px;">뉴스 장르</th>
+            <th style="width : 86px;">이미지</th>
+            <th style="width : 250px;">뉴스 제목</th>
+            <th style=>뉴스 요약</th>
+            <th style="width : 25px;">URL</th>
+        </tr>
+        {% for news in news_items %}
+        <tr>
+            <td style="text-align: center;">{{ news[1] }}</td>
+            <td style="text-align: center;">{{ news[2] }}</td>
+            <td style="text-align: center;">{{ news[3] }}</td>
+            <td>
+                <img class="news-image" src="{{ news[4] }}" alt="News Image" onclick="showModal(event, this.src)">
+            </td>
+            <td style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width : 200px;" >{{ news[5] }}</td>
+
+            <td>{{ news[8] }}</td>
+            <td style="text-align : center; vertical-align : middle;">
+                <a href="{{ news[7] }}" target="_blank">
+                    <img class="link-image" src="/static/images/pngwing.com.png" alt="Link">
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <!-- 페이지네이션 -->
+    <div>
+        {% if page > 1 %}
+            <a href="{{ url_for('show_news', genre=current_genre, page=page - 1, per_page=per_page) }}">이전</a>
+        {% endif %}
+
+        {% for i in range(start_page, end_page + 1) %}
+            <a href="{{ url_for('show_news', genre=current_genre, page=i, per_page=per_page) }}">{{ i }}</a>
+        {% endfor %}
+
+        {% if page < total_pages %}
+            <a href="{{ url_for('show_news', genre=current_genre, page=page + 1, per_page=per_page) }}">다음</a>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- 모달 창 -->
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <img id="modalImage" src="" alt="Modal Image">
+    </div>
+</div>
+
+
+
+{% endblock %}

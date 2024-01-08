@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div class="home_container">
+    <div class="home_search">
+        <form action="/" method="post">
+            <select name="genre">
+                {% for genre_name in genres %}
+                    <option value="{{ genre_name }}" {% if genre_name == selected_genre %} selected {% endif %}>
+                        {{ genre_name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <input type="date" name="date" value="{{ selected_date }}">
+            <button type="submit">검색</button>
+        </form>
+    </div>
+
+        <!-- 워드클라우드 표시 -->
+    <div class="wordcloud-container">
+        <img src="/static/wordcloud.png" alt="Word Cloud">
+    </div>
+
+
+    <div class="top10_table">
+        {% for date, top_10_groups in top_10_groups_each_day %}
+            <div class="table_wrapper">
+                <h2>{{ date.strftime('%Y-%m-%d') }}의 이슈 뉴스</h2>
+                <table>
+                    <tr>
+                        <th class="news-title">오늘의 이슈 뉴스</th>
+                        <th class="news-count">개수</th>
+                    </tr>
+                    {% for title, similer_titles in top_10_groups %}
+                        <tr>
+                            <td class="news-title" data-similar-titles="{{ similar_titles | join(',') }}">{{ title[0] }}</td>
+                            <td class="news-count">{{ title[1] }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+<!-- 모달 창 -->
+<div id="newsModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <table id="newsTable">
+            <tr>
+                <th>뉴스 게시일</th>
+                <th>언론사</th>
+                <th>뉴스 장르</th>
+                <th>이미지</th>
+                <th>뉴스 제목</th>
+                <th>요약</th>
+                <th>URL</th>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 뉴스 제목을 클릭할 때 이벤트 리스너를 설정합니다.
+    document.querySelectorAll('.news-title').forEach(item => {
+        item.addEventListener('click', function() {
+            // data-similar-titles 속성에서 similar_titles를 가져옵니다.
+            var similarTitles = this.getAttribute('data-similar-titles').split(',');
+            // AJAX 요청을 보냅니다.
+            fetch('/get_news_details', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 'titles': similarTitles })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showModalWithData(data);
+            });
+        });
+    });
+
+    // 모달 창을 닫는 함수
+    var modal = document.getElementById("newsModal");
+    var span = document.getElementsByClassName("close")[0];
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // 서버로부터 받은 데이터로 모달 창을 채우는 함수
+    function showModalWithData(data) {
+        var table = document.getElementById("newsTable");
+        // 기존 행 삭제
+        while (table.rows.length > 1) {
+            table.deleteRow(1);
+        }
+
+        // 새 데이터로 행 채우기
+        data.forEach(item => {
+            var row = table.insertRow();
+            row.insertCell(0).innerText = item[1].toLocaleString(); // 게시일 (datetime 형식을 문자열로 변환)
+            row.insertCell(1).innerText = item[2]; // 언론사
+            row.insertCell(2).innerText = item[3]; // 장르
+            var imgCell = row.insertCell(3); // 이미지 셀
+            var img = document.createElement('img');
+            img.src = item[4]; // 이미지 경로
+            img.style.width = '100px'; // 이미지 크기 조정
+            imgCell.appendChild(img);
+            row.insertCell(4).innerText = item[5]; // 뉴스 제목
+            row.insertCell(5).innerText = item[8]; // 요약
+            var linkCell = row.insertCell(6); // 링크 셀
+            var a = document.createElement('a');
+            a.href = item[7]; // URL
+            a.target = '_blank';
+            a.textContent = '링크';
+            linkCell.appendChild(a);
+        });
+
+        modal.style.display = "block";
+    }
+});
+</script>
+
+{% endblock %}

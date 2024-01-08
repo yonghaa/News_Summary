@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>News Information</title>
+    <style>
+    .link-image {
+        width: 24px; /* 원래 이미지 크기 */
+        height: 24px;
+        transition: transform 0.3s ease; /* 부드러운 변화를 위한 transition 설정 */
+    }
+    .link-image:hover {
+        transform: scale(1.1); /* 이미지 크기를 10% 증가 */
+    }
+
+   .table-container {
+   margin-top : 30%;
+   }
+
+    table {
+    width: 1200px;
+    text-align: center;
+    border: 1px solid #fff;
+    border-spacing: 1px;
+    font-family: 'Cairo', sans-serif;
+    margin: auto;
+    }
+
+    caption {
+        font-weight: bold;
+    }
+
+    table td {
+        padding: 10px;
+        background-color: #eee;
+    }
+
+    table th {
+        background-color: #333;
+        color: #fff;
+        padding: 10px;
+    }
+    </style>
+</head>
+<body>
+
+<div class="table-container">
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Media Company</th>
+            <th>News Genre</th>
+            <th>Image</th>
+            <th>Title</th>
+            <th>Summary</th>
+            <th>URL</th>
+        </tr>
+        {% for news in news_items %}
+        <tr>
+            <td>{{ news[0] }}</td>
+            <td>{{ news[1] }}</td>
+            <td>{{ news[2] }}</td>
+            <td>
+                <img class="news-image" src="{{ news[3] }}" alt="News Image">
+            </td>
+            <td>{{ news[4] }}</td>
+
+            <td>{{ news[6] }}</td>
+            <td>
+                <a href="{{ news[5] }}" target="_blank">
+                    <img class="link-image" src="/static/images/link.png" alt="Link">
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+</body>
+</html>
